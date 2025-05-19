@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mines Game MVP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>MINES GAME</h1>
+    <div class="balance">Balance: <span id="balance">1000</span> coins</div>
+    
+    <div class="bet-controls">
+      <button id="decrease-bet"><i class="fas fa-minus"></i></button>
+      <div class="bet-amount">Bet: <span id="bet-amount">10</span></div>
+      <button id="increase-bet"><i class="fas fa-plus"></i></button>
+    </div>
+    
+    <div class="grid" id="grid"></div>
+    <div class="multiplier">Multiplier: <span id="multiplier">1.00x</span></div>
+    <button id="cash-out">CASH OUT</button>
+    
+    <div class="history">
+      <h3>Game History</h3>
+      <div id="history-log"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
