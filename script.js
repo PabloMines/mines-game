@@ -1,14 +1,13 @@
-// Game state
+// Game State
 let balance = 1000;
 let betAmount = 10;
 let multiplier = 1.0;
 let mines = [];
 let revealed = [];
-let gameActive = false;
-let currentWin = 0;
+let autoCashOutValue = 0;
 const historyLog = [];
 
-// DOM elements
+// DOM Elements
 const grid = document.getElementById('grid');
 const balanceDisplay = document.getElementById('balance');
 const betAmountDisplay = document.getElementById('bet-amount');
@@ -16,125 +15,144 @@ const multiplierDisplay = document.getElementById('multiplier');
 const cashOutButton = document.getElementById('cash-out');
 const decreaseBetButton = document.getElementById('decrease-bet');
 const increaseBetButton = document.getElementById('increase-bet');
+const autoCashOutInput = document.getElementById('auto-cashout-input');
 const historyLogElement = document.getElementById('history-log');
+const toast = document.getElementById('toast');
 
-// Initialize game
+// Initialize Game
 function initGame() {
-  // Create grid tiles
-  for (let i = 0; i < 25; i++) {
-    const tile = document.createElement('div');
-    tile.dataset.index = i;
-    tile.textContent = '?';
-    tile.addEventListener('click', () => handleTileClick(i));
-    grid.appendChild(tile);
-  }
-  
-  // Event listeners
-  cashOutButton.addEventListener('click', cashOut);
-  decreaseBetButton.addEventListener('click', () => adjustBet(-5));
-  increaseBetButton.addEventListener('click', () => adjustBet(5));
-  
-  // Start first game
-  resetGame();
+    // Create Grid
+    for (let i = 0; i < 25; i++) {
+        const tile = document.createElement('div');
+        tile.dataset.index = i;
+        tile.textContent = '?';
+        tile.addEventListener('click', () => handleTileClick(i));
+        grid.appendChild(tile);
+    }
+
+    // Event Listeners
+    cashOutButton.addEventListener('click', cashOut);
+    decreaseBetButton.addEventListener('click', () => adjustBet(-5));
+    increaseBetButton.addEventListener('click', () => adjustBet(5));
+    autoCashOutInput.addEventListener('change', updateAutoCashOut);
+
+    // Start Game
+    resetGame();
 }
 
-// Handle tile click
+// Handle Tile Clicks
 function handleTileClick(index) {
-  if (!gameActive || revealed.includes(index)) return;
-  
-  revealed.push(index);
-  const tile = document.querySelector(`[data-index="${index}"]`);
-  
-  if (mines.includes(index)) {
-    // Hit a mine
-    tile.textContent = '💣';
-    tile.style.backgroundColor = '#f44336';
-    gameActive = false;
-    balance -= betAmount;
-    updateBalance();
-    addHistoryEntry(false, 0);
-    setTimeout(() => alert(`Game Over! You lost ${betAmount} coins.`), 100);
-  } else {
-    // Safe tile
-    tile.textContent = '💎';
-    tile.style.backgroundColor = '#4CAF50';
-    multiplier += 0.5;
-    currentWin = betAmount * multiplier;
-    multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
-  }
+    if (revealed.includes(index)) return;
+
+    revealed.push(index);
+    const tile = document.querySelector(`[data-index="${index}"]`);
+
+    if (mines.includes(index)) {
+        // Mine Hit
+        tile.textContent = '💣';
+        tile.style.backgroundColor = '#f44336';
+        endGame(false);
+    } else {
+        // Safe Tile
+        tile.textContent = '💎';
+        tile.style.backgroundColor = '#4CAF50';
+        multiplier += 0.5;
+        multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
+        
+        // Auto Cash-Out Check
+        if (autoCashOutValue > 0 && multiplier >= autoCashOutValue) {
+            showToast(`Auto-cashed at ${multiplier.toFixed(2)}x!`, true);
+            cashOut();
+        }
+    }
 }
 
-// Cash out
+// Cash Out
 function cashOut() {
-  if (!gameActive || revealed.length === 0) return;
-  
-  balance += currentWin;
-  updateBalance();
-  addHistoryEntry(true, currentWin);
-  resetGame();
+    const winAmount = betAmount * multiplier;
+    balance += winAmount;
+    updateBalance(balance);
+    addHistoryEntry(true, winAmount);
+    showToast(`You won ${winAmount.toFixed(2)} coins!`, true);
+    resetGame();
 }
 
-// Adjust bet amount
-function adjustBet(amount) {
-  const newBet = betAmount + amount;
-  if (newBet >= 5 && newBet <= balance) {
-    betAmount = newBet;
-    betAmountDisplay.textContent = betAmount;
-  }
+// End Game (Mine Hit)
+function endGame() {
+    balance -= betAmount;
+    updateBalance(balance);
+    addHistoryEntry(false, 0);
+    showToast(`Boom! Lost ${betAmount} coins`, false);
+    setTimeout(resetGame, 1500);
 }
 
-// Reset game state
+// Reset Game State
 function resetGame() {
-  revealed = [];
-  multiplier = 1.0;
-  currentWin = 0;
-  gameActive = true;
-  multiplierDisplay.textContent = '1.00x';
-  mines = placeMines();
-  
-  // Reset tiles
-  document.querySelectorAll('.grid div').forEach(tile => {
-    tile.textContent = '?';
-    tile.style.backgroundColor = '#3a3a3a';
-  });
+    revealed = [];
+    multiplier = 1.0;
+    multiplierDisplay.textContent = '1.00x';
+    mines = placeMines();
+    
+    // Reset Tiles
+    document.querySelectorAll('.grid div').forEach(tile => {
+        tile.textContent = '?';
+        tile.style.backgroundColor = '#3a3a3a';
+    });
 }
 
-// Place mines randomly (3 mines)
+// Place Mines Randomly
 function placeMines() {
-  const mines = [];
-  while (mines.length < 3) {
-    const randomPos = Math.floor(Math.random() * 25);
-    if (!mines.includes(randomPos)) mines.push(randomPos);
-  }
-  return mines;
+    const mines = [];
+    while (mines.length < 3) {
+        const randomPos = Math.floor(Math.random() * 25);
+        if (!mines.includes(randomPos)) mines.push(randomPos);
+    }
+    return mines;
 }
 
-// Update balance display
-function updateBalance() {
-  balanceDisplay.textContent = balance;
+// Adjust Bet Amount
+function adjustBet(amount) {
+    const newBet = betAmount + amount;
+    if (newBet >= 5 && newBet <= balance) {
+        betAmount = newBet;
+        betAmountDisplay.textContent = betAmount;
+    }
 }
 
-// Add entry to history log
+// Update Auto Cash-Out
+function updateAutoCashOut() {
+    autoCashOutValue = parseFloat(autoCashOutInput.value) || 0;
+}
+
+// Update Balance with Animation
+function updateBalance(newBalance) {
+    const isIncrease = newBalance > balance;
+    balanceDisplay.classList.add(isIncrease ? 'balance-increase' : 'balance-decrease', 'balance-pulse');
+    balanceDisplay.textContent = newBalance;
+    balance = newBalance;
+    
+    setTimeout(() => {
+        balanceDisplay.classList.remove('balance-increase', 'balance-decrease', 'balance-pulse');
+    }, 1000);
+}
+
+// Show Toast Message
+function showToast(message, isWin) {
+    toast.textContent = message;
+    toast.className = isWin ? 'toast toast-win toast-visible' : 'toast toast-loss toast-visible';
+    
+    setTimeout(() => {
+        toast.classList.remove('toast-visible');
+    }, 3000);
+}
+
+// Add History Entry
 function addHistoryEntry(isWin, amount) {
-  const entry = document.createElement('div');
-  entry.className = `history-entry ${isWin ? 'win' : 'loss'}`;
-  
-  const date = new Date().toLocaleTimeString();
-  if (isWin) {
-    entry.textContent = `${date}: Won ${amount.toFixed(2)} coins (${multiplier.toFixed(2)}x)`;
-  } else {
-    entry.textContent = `${date}: Lost ${betAmount} coins`;
-  }
-  
-  historyLog.unshift(entry);
-  historyLogElement.prepend(entry);
-  
-  // Keep only last 10 entries
-  if (historyLog.length > 10) {
-    historyLog.pop();
-    historyLogElement.removeChild(historyLogElement.lastChild);
-  }
+    const entry = document.createElement('div');
+    entry.className = `history-entry ${isWin ? 'win' : 'loss'}`;
+    entry.textContent = `${new Date().toLocaleTimeString()}: ${isWin ? 'Won' : 'Lost'} ${isWin ? amount.toFixed(2) : betAmount} coins`;
+    historyLogElement.prepend(entry);
 }
 
-// Start the game
+// Start the Game
 initGame();
