@@ -1,29 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mines Game MVP</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Mines Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<button id="decrease-bet"><i class="fas fa-minus"></i></button>
-  <h1>MINES GAME</h1>
-<button id="increase-bet"><i class="fas fa-plus"></i></button>
-  <div class="bet-controls">
-      <button id="decrease-bet"><i class="fas fa-minus"></i></button>
-      <div class="bet-amount">Bet: <span id="bet-amount">10</span></div>
-      <button id="increase-bet"><i class="fas fa-plus"></i></button>
+    <div id="toast"></div> <!-- Win/Loss Feedback -->
+    
+    <div class="game-container">
+        <h1>MINES GAME</h1>
+        <div class="balance">Balance: <span id="balance">1000</span> coins</div>
+        
+        <!-- Bet Controls + Auto Cash-Out -->
+        <div class="bet-controls">
+            <button id="decrease-bet"><i class="fas fa-minus"></i></button>
+            <div class="bet-amount">Bet: <span id="bet-amount">10</span></div>
+            <button id="increase-bet"><i class="fas fa-plus"></i></button>
+        </div>
+        <div class="auto-cashout">
+            <input type="number" id="auto-cashout-input" min="1" step="0.5" placeholder="Auto at... (e.g., 3x)">
+        </div>
+
+        <!-- Game Grid -->
+        <div class="grid" id="grid"></div>
+        
+        <div class="multiplier">Multiplier: <span id="multiplier">1.00x</span></div>
+        <button id="cash-out">CASH OUT</button>
+        
+        <!-- Game History -->
+        <div class="history">
+            <h3>Game History</h3>
+            <div id="history-log"></div>
+        </div>
     </div>
     
-    <div class="grid" id="grid"></div>
-    <div class="multiplier">Multiplier: <span id="multiplier">1.00x</span></div>
-    <button id="cash-out">CASH OUT</button>
-    
-    <div class="history">
-      <h3>Game History</h3>
-      <div id="history-log"></div>
-    </div>
-  </div>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
